@@ -19,9 +19,9 @@ public class PatientController {
     }
 
     @GetMapping("/{email}")
-    public Patient getPatientByEmail(@PathVariable("email") String e) {
+    public Patient getPatientByEmail(@PathVariable("email") String email) {
         return patients.stream()
-                .filter(patient -> patient.getEmail().equals(e))
+                .filter(patient -> patient.getEmail().equals(email))
                 .findFirst()
                 .orElseThrow(PatientNotFoundException::new);
     }
@@ -41,7 +41,7 @@ public class PatientController {
     }
 
     @DeleteMapping("/{email}")
-    public ResponseEntity<String> deletePatientById(@PathVariable("email") String email) {
+    public ResponseEntity<String> deletePatientByEmail(@PathVariable("email") String email) {
         patients.removeIf(employee -> employee.getEmail().equals(email));
 
         return ResponseEntity.ok("Removed patient");
