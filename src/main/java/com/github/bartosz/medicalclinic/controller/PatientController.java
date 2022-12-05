@@ -63,6 +63,4 @@ public class PatientController {
 
         return ResponseEntity.ok("Edited patient");
     }
-
-
 }
