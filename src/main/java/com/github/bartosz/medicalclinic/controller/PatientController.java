@@ -49,10 +49,7 @@ public class PatientController {
 
     @PutMapping("/{email}")
     public ResponseEntity<String> editPatient(@PathVariable("email") String email, @RequestBody Patient newPatient) {
-        var editedPatient = patients.stream()
-                .filter(patient -> patient.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(PatientNotFoundException::new);
+        var editedPatient = findPatientByEmail(email);
 
         editedPatient.setBirthday(newPatient.getBirthday());
         editedPatient.setEmail(newPatient.getEmail());
@@ -62,5 +59,20 @@ public class PatientController {
         editedPatient.setPassword(newPatient.getPassword());
 
         return ResponseEntity.ok("Edited patient");
+    }
+
+    @PatchMapping("/{email}")
+    public ResponseEntity<String> editPassword(@PathVariable("email") String email, @RequestBody String password) {
+        var editedPatient = findPatientByEmail(email);
+        editedPatient.setPassword(password);
+
+        return ResponseEntity.ok("Changed password");
+    }
+
+    private Patient findPatientByEmail(String email) {
+        return patients.stream()
+                .filter(patient -> patient.getEmail().equals(email))
+                .findFirst()
+                .orElseThrow(PatientNotFoundException::new);
     }
 }
