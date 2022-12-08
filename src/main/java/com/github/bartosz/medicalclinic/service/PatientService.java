@@ -87,10 +87,6 @@ public class PatientService {
             return true;
         }
 
-        var newPatientWithGivenEmail = patients.stream()
-                .filter(patient -> patient.getEmail().equals(newPatient.getEmail()))
-                .findFirst();
-
-        return newPatientWithGivenEmail.isEmpty();
+        return findPatientByEmail(email).isEmpty();
     }
 }

@@ -2,21 +2,18 @@ package com.github.bartosz.medicalclinic.controller;
 
 import com.github.bartosz.medicalclinic.model.Patient;
 import com.github.bartosz.medicalclinic.service.PatientService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/patients")
 public class PatientController {
 
     private final PatientService patientService;
-
-    PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }
-
 
     @GetMapping
     public ResponseEntity<List<Patient>> getAllPatients() {
