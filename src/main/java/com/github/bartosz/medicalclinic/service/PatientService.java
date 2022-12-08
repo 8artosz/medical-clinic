@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PatientService {
@@ -48,11 +49,13 @@ public class PatientService {
     }
 
     public void editPatient(String email, Patient newPatient) {
-        var editedPatient = findPatientByEmail(email);
 
         if (!isPatientEditDataValid(newPatient, email)) {
             throw new PatientAlreadyExists();
         }
+
+        var editedPatient = findPatientByEmail(email)
+                .orElseThrow(PatientNotFoundException::new);
 
         editedPatient.setBirthday(newPatient.getBirthday());
         editedPatient.setEmail(newPatient.getEmail());
@@ -63,7 +66,8 @@ public class PatientService {
     }
 
     public void editPassword(String email, String password) {
-        var editedPatient = findPatientByEmail(email);
+        var editedPatient = findPatientByEmail(email)
+                .orElseThrow(PatientNotFoundException::new);
 
         if (password.equals(editedPatient.getPassword())) {
             throw new PasswordAlreadyExistsException();
@@ -72,11 +76,10 @@ public class PatientService {
         editedPatient.setPassword(password);
     }
 
-    private Patient findPatientByEmail(String email) {
+    private Optional<Patient> findPatientByEmail(String email) {
         return patients.stream()
                 .filter(patient -> patient.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(PatientNotFoundException::new);
+                .findFirst();
     }
 
     private boolean isPatientEditDataValid(Patient newPatient, String email) {
