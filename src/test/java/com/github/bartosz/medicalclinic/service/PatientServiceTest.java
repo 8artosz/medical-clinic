@@ -1,5 +1,8 @@
 package com.github.bartosz.medicalclinic.service;
 
+import com.github.bartosz.medicalclinic.exception.PasswordAlreadyExistsException;
+import com.github.bartosz.medicalclinic.exception.PatientAlreadyExists;
+import com.github.bartosz.medicalclinic.exception.PatientNotFoundException;
 import com.github.bartosz.medicalclinic.model.Patient;
 import com.github.bartosz.medicalclinic.repository.PatientRepository;
 import com.github.bartosz.medicalclinic.util.PatientUtils;
@@ -11,8 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -29,7 +31,7 @@ class PatientServiceTest {
     }
 
     @Test
-    void getAllPatientsTest() {
+    void getAllPatients_CorrectData_ReturnData() {
         var patients = List.of(PatientUtils.buildPatient());
         when(patientRepository.findAll()).thenReturn(patients);
 
@@ -41,7 +43,7 @@ class PatientServiceTest {
     }
 
     @Test
-    void getPatientByEmailTest() {
+    void getPatientByEmail_CorrectData_ReturnData() {
         var patient = PatientUtils.buildPatient();
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
 
@@ -52,7 +54,16 @@ class PatientServiceTest {
     }
 
     @Test
-    void getPatientByIdTest() {
+    void getPatientByEmail_PatientDoesNotExist_ThrowException() {
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+       PatientNotFoundException exception =  assertThrows(PatientNotFoundException.class,() -> patientService.getPatientByEmail("test@gmail.com"));
+
+       assertEquals("Patient not found", exception.getMessage());
+    }
+
+    @Test
+    void getPatientById_CorrectData_ReturnData() {
         var patient = PatientUtils.buildPatient();
         when(patientRepository.getPatientById(anyLong())).thenReturn(Optional.of(patient));
 
@@ -63,7 +74,16 @@ class PatientServiceTest {
     }
 
     @Test
-    void addPatientTest() {
+    void getPatientById_PatientDoesNotExist_ThrowException() {
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        PatientNotFoundException exception =  assertThrows(PatientNotFoundException.class,() -> patientService.getPatientById(1));
+
+        assertEquals("Patient not found", exception.getMessage());
+    }
+
+    @Test
+    void addPatient_CorrectData_SaveInvoked() {
         var patient = PatientUtils.buildPatient();
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         doNothing().when(patientRepository).save(any());
@@ -74,7 +94,17 @@ class PatientServiceTest {
     }
 
     @Test
-    void editPatientTest() {
+    void addPatient_PatientAlreadyExist_ThrowException() {
+        var patient = PatientUtils.buildPatient();
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
+
+        PatientAlreadyExists exception = assertThrows(PatientAlreadyExists.class, () -> patientService.addPatient(patient));
+
+        assertEquals("Patient with given email already exists", exception.getMessage());
+    }
+
+    @Test
+    void editPatient_CorrectData_UpdateInvoked() {
         var patient = PatientUtils.buildPatient();
         var email = patient.getEmail();
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
@@ -86,7 +116,29 @@ class PatientServiceTest {
     }
 
     @Test
-    void deletePatientByEmailTest() {
+    void editPatient_PatientWithGivenEmailExists_ThrowException() {
+        var patient = PatientUtils.buildPatient();
+        var email = "test1@gmail.com";
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
+
+        PatientAlreadyExists exception = assertThrows(PatientAlreadyExists.class, () -> patientService.editPatient(email,patient));
+
+        assertEquals("Patient with given email already exists", exception.getMessage());
+    }
+
+    @Test
+    void editPatient_PatientDoesNotExist_ThrowException() {
+        var patient = PatientUtils.buildPatient();
+        var email = patient.getEmail();
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.editPatient(email,patient));
+
+        assertEquals("Patient not found", exception.getMessage());
+    }
+
+    @Test
+    void deletePatientByEmail_CorrectData_DeleteByEmailInvoked() {
         var email = "test@gmail.com";
         doNothing().when(patientRepository).deleteByEmail(anyString());
 
@@ -96,7 +148,7 @@ class PatientServiceTest {
     }
 
     @Test
-    void editPasswordTest() {
+    void editPassword_CorrectData_UpdateInvoked() {
         var patient = PatientUtils.buildPatient();
         var email = "test@gmail.com";
         var password = "test1";
@@ -106,6 +158,29 @@ class PatientServiceTest {
         patientService.editPassword(email, password);
 
         verify(patientRepository).update(email, patient);
+    }
+
+    @Test
+    void editPassword_PatientDoesNotExist_ThrowException() {
+        var email = "test@gmail.com";
+        var password = "test";
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.editPassword(email,password));
+
+        assertEquals("Patient not found", exception.getMessage());
+    }
+
+    @Test
+    void editPassword_PasswordAlreadyExist_ThrowException() {
+        var patient = PatientUtils.buildPatient();
+        var email = "test@gmail.com";
+        var password = "test";
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
+
+        PasswordAlreadyExistsException exception = assertThrows(PasswordAlreadyExistsException.class, () -> patientService.editPassword(email,password));
+
+        assertEquals("Password already exists", exception.getMessage());
     }
 
     private void checkPatients(List<Patient> expectedPatients, List<Patient> actualPatients) {
