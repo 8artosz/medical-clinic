@@ -103,7 +103,7 @@ class PatientServiceTest {
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(patient));
         doNothing().when(patientRepository).update(anyString(), any(Patient.class));
 
-        patient.setPassword(password);
+        patientService.editPassword(email, password);
 
         verify(patientRepository).update(email, patient);
     }
