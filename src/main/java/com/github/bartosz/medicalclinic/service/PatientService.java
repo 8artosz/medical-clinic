@@ -50,10 +50,7 @@ public class PatientService {
             throw new PatientAlreadyExists();
         }
 
-        var editedPatient = patientRepository.findByEmail(email)
-                .orElseThrow(PatientNotFoundException::new);
-
-        patientRepository.update(email, editedPatient);
+        patientRepository.update(email, newPatient);
     }
 
     public void editPassword(String email, String password) {
@@ -74,6 +71,6 @@ public class PatientService {
             return true;
         }
 
-        return patientRepository.findByEmail(email).isEmpty();
+        return patientRepository.findByEmail(newPatient.getEmail()).isEmpty();
     }
 }

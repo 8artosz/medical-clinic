@@ -1,5 +1,7 @@
 package com.github.bartosz.medicalclinic.repository;
 
+import com.github.bartosz.medicalclinic.exception.PatientIllegalOperationException;
+import com.github.bartosz.medicalclinic.exception.PatientNotFoundException;
 import com.github.bartosz.medicalclinic.model.Patient;
 import org.springframework.stereotype.Repository;
 
@@ -38,7 +40,7 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void deleteByEmail(String email) {
-        patients.removeIf(patient -> patient.getEmail().equals(email));
+        findByEmail(email).ifPresent(patients::remove);
     }
 
     @Override
@@ -50,16 +52,19 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void update(String email, Patient patient) {
-        var editedPatient = findByEmail(email);
+        if(!patient.isPatientValid()){
+            throw new PatientIllegalOperationException();
+        }
 
-        editedPatient.ifPresent(entity -> {
-            entity.setPassword(patient.getPassword());
-            entity.setBirthday(patient.getBirthday());
-            entity.setFirstName(patient.getFirstName());
-            entity.setLastName(patient.getLastName());
-            entity.setPhoneNumber(patient.getPhoneNumber());
-            entity.setEmail(patient.getEmail());
-            entity.setIdCardNo(patient.getIdCardNo());
-        });
+        var entity = findByEmail(email)
+                .orElseThrow(PatientNotFoundException::new);
+
+        entity.setPassword(patient.getPassword());
+        entity.setBirthday(patient.getBirthday());
+        entity.setFirstName(patient.getFirstName());
+        entity.setLastName(patient.getLastName());
+        entity.setPhoneNumber(patient.getPhoneNumber());
+        entity.setEmail(patient.getEmail());
+        entity.setIdCardNo(patient.getIdCardNo());
     }
 }

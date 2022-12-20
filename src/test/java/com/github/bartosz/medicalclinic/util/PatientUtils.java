@@ -16,7 +16,7 @@ public final class PatientUtils {
                 .firstName("Test1")
                 .lastName("Test2")
                 .phoneNumber("821222838")
-                .idCardNo(1)
+                .idCardNo(1L)
                 .build();
     }
 }
