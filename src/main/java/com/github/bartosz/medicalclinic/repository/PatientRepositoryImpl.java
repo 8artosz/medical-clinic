@@ -1,5 +1,6 @@
 package com.github.bartosz.medicalclinic.repository;
 
+import com.github.bartosz.medicalclinic.exception.PatientNotFoundException;
 import com.github.bartosz.medicalclinic.model.Patient;
 import org.springframework.stereotype.Repository;
 
@@ -52,7 +53,7 @@ public class PatientRepositoryImpl implements PatientRepository {
     public void update(String email, Patient patient) {
         var editedPatient = findByEmail(email);
 
-        editedPatient.ifPresent(entity -> {
+        editedPatient.ifPresentOrElse(entity -> {
             entity.setPassword(patient.getPassword());
             entity.setBirthday(patient.getBirthday());
             entity.setFirstName(patient.getFirstName());
@@ -60,6 +61,9 @@ public class PatientRepositoryImpl implements PatientRepository {
             entity.setPhoneNumber(patient.getPhoneNumber());
             entity.setEmail(patient.getEmail());
             entity.setIdCardNo(patient.getIdCardNo());
+        }, () -> {
+            throw new PatientNotFoundException();
+
         });
     }
 }
