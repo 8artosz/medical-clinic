@@ -26,12 +26,13 @@ public class Patient {
     private LocalDate birthday;
 
     public void setIdCardNo(Long idCardNo) {
-        if (!this.idCardNo.equals(idCardNo)) {
+        if (this.idCardNo != null && !this.idCardNo.equals(idCardNo)) {
             throw new PatientIllegalOperationException();
         }
+        this.idCardNo = idCardNo;
     }
 
-    public boolean isPatientValid(){
+    public boolean isPatientValid() {
         return this.email != null && this.password != null
                 && this.idCardNo != null && this.firstName != null
                 && this.lastName != null && this.phoneNumber != null

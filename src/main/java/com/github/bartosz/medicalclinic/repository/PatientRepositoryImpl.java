@@ -21,6 +21,9 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void save(Patient patient) {
+        if (!patient.isPatientValid()) {
+            throw new PatientIllegalOperationException();
+        }
         patients.add(patient);
     }
 
@@ -52,7 +55,7 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void update(String email, Patient patient) {
-        if(!patient.isPatientValid()){
+        if (!patient.isPatientValid()) {
             throw new PatientIllegalOperationException();
         }
 
