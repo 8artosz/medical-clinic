@@ -1,16 +1,29 @@
 package com.github.bartosz.medicalclinic.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.github.bartosz.medicalclinic.exception.PatientIllegalOperationException;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
 @ToString
 public class Patient {
+    @JsonCreator
+    public Patient(String email, String password, Long idCardNo, String firstName, String lastName, String phoneNumber, LocalDate birthday) {
+        this.email = email;
+        this.password = password;
+        this.idCardNo = idCardNo;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.birthday = birthday;
+    }
+
     @Setter
     private String email;
     @Setter
@@ -26,10 +39,9 @@ public class Patient {
     private LocalDate birthday;
 
     public void setIdCardNo(Long idCardNo) {
-        if (this.idCardNo != null && !this.idCardNo.equals(idCardNo)) {
+        if (!this.idCardNo.equals(idCardNo)) {
             throw new PatientIllegalOperationException();
         }
-        this.idCardNo = idCardNo;
     }
 
     public boolean isPatientValid() {
