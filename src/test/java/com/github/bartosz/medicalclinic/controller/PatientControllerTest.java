@@ -40,7 +40,7 @@ class PatientControllerTest {
 
     @Test
     void getAllPatientsTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(get("/patients"))
                 .andDo(print())
@@ -51,7 +51,7 @@ class PatientControllerTest {
 
     @Test
     void getPatientByEmailTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(get("/patients/{email}", patient.getEmail()))
                 .andDo(print())
@@ -61,7 +61,7 @@ class PatientControllerTest {
 
     @Test
     void getPatientByIdTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(get("/patients/id")
                         .param("id", "1"))
@@ -72,7 +72,7 @@ class PatientControllerTest {
 
     @Test
     void addPatientTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         mockMvc.perform(post("/patients")
                         .content(objectMapper.writeValueAsString(patient))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -83,7 +83,7 @@ class PatientControllerTest {
 
     @Test
     void deletePatientByEmailTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(delete("/patients/{email}", patient.getEmail()))
                 .andDo(print())
@@ -92,7 +92,7 @@ class PatientControllerTest {
 
     @Test
     void editPatientTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(put("/patients/{email}", patient.getEmail())
                         .content(objectMapper.writeValueAsString(patient))
@@ -103,7 +103,7 @@ class PatientControllerTest {
 
     @Test
     void editPasswordTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(patch("/patients/{email}", patient.getEmail())
                         .content(objectMapper.writeValueAsString("asd123"))
