@@ -32,8 +32,8 @@ class PatientServiceTest {
 
     @BeforeEach
     void setup() {
-        modelMapper= new ModelMapper();
-        patientService = new PatientService(patientRepository,modelMapper);
+        modelMapper = new ModelMapper();
+        patientService = new PatientService(patientRepository, modelMapper);
     }
 
     @Test
@@ -43,8 +43,8 @@ class PatientServiceTest {
 
         var result = patientService.getAllPatients();
         var expectedResult = patients.stream()
-                        .map(patient -> modelMapper.map(patient, PatientDto.class))
-                                .collect(Collectors.toList());
+                .map(patient -> modelMapper.map(patient, PatientDto.class))
+                .collect(Collectors.toList());
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -59,16 +59,16 @@ class PatientServiceTest {
         var result = patientService.getPatientByEmail("test@gmail.com");
 
         assertNotNull(result);
-        checkPatientDto(modelMapper.map(patient,PatientDto.class), result);
+        checkPatientDto(modelMapper.map(patient, PatientDto.class), result);
     }
 
     @Test
     void getPatientByEmail_PatientDoesNotExist_ThrowException() {
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-       PatientNotFoundException exception =  assertThrows(PatientNotFoundException.class,() -> patientService.getPatientByEmail("test@gmail.com"));
+        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.getPatientByEmail("test@gmail.com"));
 
-       assertEquals("Patient not found", exception.getMessage());
+        assertEquals("Patient not found", exception.getMessage());
     }
 
     @Test
@@ -79,14 +79,14 @@ class PatientServiceTest {
         var result = patientService.getPatientById(1);
 
         assertNotNull(result);
-        checkPatientDto(modelMapper.map(patient,PatientDto.class), result);
+        checkPatientDto(modelMapper.map(patient, PatientDto.class), result);
     }
 
     @Test
     void getPatientById_PatientDoesNotExist_ThrowException() {
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        PatientNotFoundException exception =  assertThrows(PatientNotFoundException.class,() -> patientService.getPatientById(1));
+        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.getPatientById(1));
 
         assertEquals("Patient not found", exception.getMessage());
     }
@@ -99,7 +99,7 @@ class PatientServiceTest {
 
         patientService.addPatient(patient);
 
-        verify(patientRepository).save(any(Patient.class));
+        verify(patientRepository).save(modelMapper.map(patient, Patient.class));
     }
 
     @Test
@@ -121,7 +121,7 @@ class PatientServiceTest {
 
         patientService.editPatient(email, patient);
 
-        verify(patientRepository).update(anyString(), any(Patient.class));
+        verify(patientRepository).update(email, modelMapper.map(patient, Patient.class));
     }
 
     @Test
@@ -130,7 +130,7 @@ class PatientServiceTest {
         var email = "test1@gmail.com";
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(PatientUtils.buildPatient(patient)));
 
-        PatientAlreadyExists exception = assertThrows(PatientAlreadyExists.class, () -> patientService.editPatient(email,patient));
+        PatientAlreadyExists exception = assertThrows(PatientAlreadyExists.class, () -> patientService.editPatient(email, patient));
 
         assertEquals("Patient with given email already exists", exception.getMessage());
     }
@@ -143,7 +143,7 @@ class PatientServiceTest {
         var email = "test@gmail.com";
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(PatientUtils.buildPatient(patient)));
 
-        PatientIllegalOperationException exception = assertThrows(PatientIllegalOperationException.class, () -> patientService.editPatient(email,patientWithEditedIdCardNo));
+        PatientIllegalOperationException exception = assertThrows(PatientIllegalOperationException.class, () -> patientService.editPatient(email, patientWithEditedIdCardNo));
 
         assertEquals("Patient illegal operation", exception.getMessage());
     }
@@ -168,7 +168,8 @@ class PatientServiceTest {
 
         patientService.editPassword(email, password);
 
-        verify(patientRepository).update(anyString(), any(Patient.class));
+        patient.setPassword(password);
+        verify(patientRepository).update(email, modelMapper.map(patient, Patient.class));
     }
 
     @Test
@@ -177,7 +178,7 @@ class PatientServiceTest {
         var password = "test";
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
-        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.editPassword(email,password));
+        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.editPassword(email, password));
 
         assertEquals("Patient not found", exception.getMessage());
     }
@@ -189,7 +190,7 @@ class PatientServiceTest {
         var password = "test";
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(PatientUtils.buildPatient(patient)));
 
-        PasswordAlreadyExistsException exception = assertThrows(PasswordAlreadyExistsException.class, () -> patientService.editPassword(email,password));
+        PasswordAlreadyExistsException exception = assertThrows(PasswordAlreadyExistsException.class, () -> patientService.editPassword(email, password));
 
         assertEquals("Password already exists", exception.getMessage());
     }
