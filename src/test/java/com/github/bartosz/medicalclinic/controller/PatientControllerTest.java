@@ -2,6 +2,7 @@ package com.github.bartosz.medicalclinic.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bartosz.medicalclinic.util.PatientUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,11 @@ class PatientControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @AfterEach
+    void setup() {
+       patientController.deletePatientByEmail("test@gmail.com");
+    }
 
     @Test
     void getAllPatientsTest() throws Exception {
@@ -68,8 +74,8 @@ class PatientControllerTest {
     void addPatientTest() throws Exception {
         var patient = PatientUtils.buildPatient();
         mockMvc.perform(post("/patients")
-                .content(objectMapper.writeValueAsString(patient))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(patient))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -88,9 +94,9 @@ class PatientControllerTest {
     void editPatientTest() throws Exception {
         var patient = PatientUtils.buildPatient();
         patientController.addPatient(patient);
-        mockMvc.perform(put("/patients/{email}",patient.getEmail())
-                .content(objectMapper.writeValueAsString(patient))
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/patients/{email}", patient.getEmail())
+                        .content(objectMapper.writeValueAsString(patient))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -99,7 +105,7 @@ class PatientControllerTest {
     void editPasswordTest() throws Exception {
         var patient = PatientUtils.buildPatient();
         patientController.addPatient(patient);
-        mockMvc.perform(patch("/patients/{email}",patient.getEmail())
+        mockMvc.perform(patch("/patients/{email}", patient.getEmail())
                         .content(objectMapper.writeValueAsString("asd123"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

@@ -127,17 +127,6 @@ class PatientServiceTest {
     }
 
     @Test
-    void editPatient_PatientDoesNotExist_ThrowException() {
-        var patient = PatientUtils.buildPatient();
-        var email = patient.getEmail();
-        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
-        PatientNotFoundException exception = assertThrows(PatientNotFoundException.class, () -> patientService.editPatient(email,patient));
-
-        assertEquals("Patient not found", exception.getMessage());
-    }
-
-    @Test
     void deletePatientByEmail_CorrectData_DeleteByEmailInvoked() {
         var email = "test@gmail.com";
         doNothing().when(patientRepository).deleteByEmail(anyString());
