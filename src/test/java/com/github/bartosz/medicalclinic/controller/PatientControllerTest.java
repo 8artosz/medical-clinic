@@ -2,6 +2,7 @@ package com.github.bartosz.medicalclinic.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.bartosz.medicalclinic.util.PatientUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +33,14 @@ class PatientControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @AfterEach
+    void setup() {
+       patientController.deletePatientByEmail("test@gmail.com");
+    }
+
     @Test
     void getAllPatientsTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(get("/patients"))
                 .andDo(print())
@@ -45,7 +51,7 @@ class PatientControllerTest {
 
     @Test
     void getPatientByEmailTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(get("/patients/{email}", patient.getEmail()))
                 .andDo(print())
@@ -54,22 +60,11 @@ class PatientControllerTest {
     }
 
     @Test
-    void getPatientByIdTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
-        patientController.addPatient(patient);
-        mockMvc.perform(get("/patients/id")
-                        .param("id", "1"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(patient.getEmail()));
-    }
-
-    @Test
     void addPatientTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         mockMvc.perform(post("/patients")
-                .content(objectMapper.writeValueAsString(patient))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(patient))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -77,7 +72,7 @@ class PatientControllerTest {
 
     @Test
     void deletePatientByEmailTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
         mockMvc.perform(delete("/patients/{email}", patient.getEmail()))
                 .andDo(print())
@@ -86,20 +81,20 @@ class PatientControllerTest {
 
     @Test
     void editPatientTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
-        mockMvc.perform(put("/patients/{email}",patient.getEmail())
-                .content(objectMapper.writeValueAsString(patient))
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/patients/{email}", patient.getEmail())
+                        .content(objectMapper.writeValueAsString(patient))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void editPasswordTest() throws Exception {
-        var patient = PatientUtils.buildPatient();
+        var patient = PatientUtils.buildPatientDto();
         patientController.addPatient(patient);
-        mockMvc.perform(patch("/patients/{email}",patient.getEmail())
+        mockMvc.perform(patch("/patients/{email}", patient.getEmail())
                         .content(objectMapper.writeValueAsString("asd123"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

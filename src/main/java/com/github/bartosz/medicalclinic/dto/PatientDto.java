@@ -1,4 +1,4 @@
-package com.github.bartosz.medicalclinic.model;
+package com.github.bartosz.medicalclinic.dto;
 
 import lombok.*;
 
@@ -6,14 +6,13 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@ToString
-public class Patient {
+public class PatientDto {
     private String email;
     private String password;
-    private long idCardNo;
+    private Long idCardNo;
     private String firstName;
     private String lastName;
     private String phoneNumber;
