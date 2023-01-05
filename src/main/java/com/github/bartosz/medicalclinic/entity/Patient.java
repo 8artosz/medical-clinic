@@ -1,14 +1,19 @@
-package com.github.bartosz.medicalclinic.model;
+package com.github.bartosz.medicalclinic.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.github.bartosz.medicalclinic.dto.PatientDto;
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Objects;
 
+@Entity
+@Table(name = "PATIENT")
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @ToString
 public class Patient {
@@ -23,9 +28,13 @@ public class Patient {
         this.birthday = birthday;
     }
 
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(name = "EMAIL", unique = true)
     private String email;
     private String password;
+    @Column(name = "IDCARDNO", unique = true)
     private Long idCardNo;
     private String firstName;
     private String lastName;
@@ -38,6 +47,7 @@ public class Patient {
                 && this.lastName != null && this.phoneNumber != null
                 && this.birthday != null;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,5 +59,14 @@ public class Patient {
     @Override
     public int hashCode() {
         return Objects.hash(email, password, idCardNo, firstName, lastName, phoneNumber, birthday);
+    }
+
+    public void update(PatientDto patientDto) {
+        this.email = patientDto.getEmail();
+        this.birthday = patientDto.getBirthday();
+        this.firstName = patientDto.getFirstName();
+        this.lastName = patientDto.getLastName();
+        this.phoneNumber = patientDto.getPhoneNumber();
+        this.password = patientDto.getPassword();
     }
 }

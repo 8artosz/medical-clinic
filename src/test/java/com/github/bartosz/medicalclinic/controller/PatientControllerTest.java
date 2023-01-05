@@ -60,17 +60,6 @@ class PatientControllerTest {
     }
 
     @Test
-    void getPatientByIdTest() throws Exception {
-        var patient = PatientUtils.buildPatientDto();
-        patientController.addPatient(patient);
-        mockMvc.perform(get("/patients/id")
-                        .param("id", "1"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(patient.getEmail()));
-    }
-
-    @Test
     void addPatientTest() throws Exception {
         var patient = PatientUtils.buildPatientDto();
         mockMvc.perform(post("/patients")

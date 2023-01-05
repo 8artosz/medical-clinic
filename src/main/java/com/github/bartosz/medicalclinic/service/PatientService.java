@@ -1,16 +1,17 @@
 package com.github.bartosz.medicalclinic.service;
 
 import com.github.bartosz.medicalclinic.dto.PatientDto;
+import com.github.bartosz.medicalclinic.entity.Patient;
 import com.github.bartosz.medicalclinic.exception.PasswordAlreadyExistsException;
 import com.github.bartosz.medicalclinic.exception.PatientAlreadyExists;
 import com.github.bartosz.medicalclinic.exception.PatientIllegalOperationException;
 import com.github.bartosz.medicalclinic.exception.PatientNotFoundException;
-import com.github.bartosz.medicalclinic.model.Patient;
+import com.github.bartosz.medicalclinic.mappers.PatientMapper;
 import com.github.bartosz.medicalclinic.repository.PatientRepository;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,52 +20,58 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final ModelMapper modelMapper;
+    private final PatientMapper patientMapper;
 
     public List<PatientDto> getAllPatients() {
         return patientRepository.findAll().stream()
-                .map(patient -> modelMapper.map(patient, PatientDto.class))
+                .map(patient -> patientMapper.patientToPatientDto(patient))
                 .collect(Collectors.toList());
     }
 
     public PatientDto getPatientByEmail(String email) {
         var patient = patientRepository.findByEmail(email)
                 .orElseThrow(PatientNotFoundException::new);
-        return modelMapper.map(patient, PatientDto.class);
+        return patientMapper.patientToPatientDto(patient);
     }
 
+    @Transactional
     public void addPatient(PatientDto newPatient) {
         var patientWithGivenEmail = patientRepository.findByEmail(newPatient.getEmail());
 
         if (patientWithGivenEmail.isPresent()) {
             throw new PatientAlreadyExists();
         }
-
-        patientRepository.save(modelMapper.map(newPatient,Patient.class));
+        patientRepository.save(patientMapper.patientDtoToPatient(newPatient));
     }
 
     public PatientDto getPatientById(long id) {
-        var patient = patientRepository.getPatientById(id)
+        var patient = patientRepository.findById(id)
                 .orElseThrow(PatientNotFoundException::new);
-        return modelMapper.map(patient, PatientDto.class);
+        return patientMapper.patientToPatientDto(patient);
     }
 
+    @Transactional
     public void deletePatientByEmail(String email) {
         patientRepository.deleteByEmail(email);
     }
 
+    @Transactional
     public void editPatient(String email, PatientDto newPatient) {
+        var patient = patientRepository.findByEmail(email)
+                .orElseThrow(PatientNotFoundException::new);
+
         if (!isPatientEditDataValid(newPatient, email)) {
             throw new PatientAlreadyExists();
         }
 
-        if(!isIdCardNoEdited(newPatient)){
+        if (!isIdCardNoEdited(patient, newPatient)) {
             throw new PatientIllegalOperationException();
         }
-
-        patientRepository.update(email, modelMapper.map(newPatient, Patient.class));
+        patient.update(newPatient);
+        patientRepository.save(patient);
     }
 
+    @Transactional
     public void editPassword(String email, String password) {
         var editedPatient = patientRepository.findByEmail(email)
                 .orElseThrow(PatientNotFoundException::new);
@@ -72,10 +79,8 @@ public class PatientService {
         if (password.equals(editedPatient.getPassword())) {
             throw new PasswordAlreadyExistsException();
         }
-
         editedPatient.setPassword(password);
-
-        patientRepository.update(email, editedPatient);
+        patientRepository.save(editedPatient);
     }
 
     private boolean isPatientEditDataValid(PatientDto newPatient, String email) {
@@ -86,10 +91,8 @@ public class PatientService {
         return patientRepository.findByEmail(newPatient.getEmail()).isEmpty();
     }
 
-    private boolean isIdCardNoEdited(PatientDto patientDto){
-        var entity = patientRepository.findByEmail(patientDto.getEmail());
-
-        return entity.map(patient -> patientDto.getIdCardNo().equals(patient.getIdCardNo())).orElse(true);
+    private boolean isIdCardNoEdited(Patient patient, PatientDto patientDto) {
+        return patient.getIdCardNo().equals(patientDto.getIdCardNo());
 
     }
 }

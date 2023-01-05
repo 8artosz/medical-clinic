@@ -1,14 +1,12 @@
 package com.github.bartosz.medicalclinic.util;
 
 import com.github.bartosz.medicalclinic.dto.PatientDto;
-import com.github.bartosz.medicalclinic.model.Patient;
-import org.modelmapper.ModelMapper;
+import com.github.bartosz.medicalclinic.entity.Patient;
+import com.github.bartosz.medicalclinic.mappers.PatientMapper;
 
 import java.time.LocalDate;
 
 public final class PatientUtils {
-
-    private static final ModelMapper MODEL_MAPPER = new ModelMapper();
     private PatientUtils() {}
 
     public static PatientDto buildPatientDto() {
@@ -24,6 +22,6 @@ public final class PatientUtils {
     }
 
     public static Patient buildPatient(PatientDto patientDto) {
-        return MODEL_MAPPER.map(patientDto, Patient.class);
+        return PatientMapper.INSTANCE.patientDtoToPatient(patientDto);
     }
 }

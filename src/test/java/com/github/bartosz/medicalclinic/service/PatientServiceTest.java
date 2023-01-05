@@ -1,16 +1,16 @@
 package com.github.bartosz.medicalclinic.service;
 
 import com.github.bartosz.medicalclinic.dto.PatientDto;
+import com.github.bartosz.medicalclinic.entity.Patient;
 import com.github.bartosz.medicalclinic.exception.PasswordAlreadyExistsException;
 import com.github.bartosz.medicalclinic.exception.PatientAlreadyExists;
 import com.github.bartosz.medicalclinic.exception.PatientIllegalOperationException;
 import com.github.bartosz.medicalclinic.exception.PatientNotFoundException;
-import com.github.bartosz.medicalclinic.model.Patient;
+import com.github.bartosz.medicalclinic.mappers.PatientMapper;
 import com.github.bartosz.medicalclinic.repository.PatientRepository;
 import com.github.bartosz.medicalclinic.util.PatientUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -26,14 +26,15 @@ import static org.mockito.Mockito.*;
 class PatientServiceTest {
 
     private PatientService patientService;
-    private ModelMapper modelMapper;
+
+    private PatientMapper patientMapper;
     @MockBean
     private PatientRepository patientRepository;
 
     @BeforeEach
     void setup() {
-        modelMapper = new ModelMapper();
-        patientService = new PatientService(patientRepository, modelMapper);
+        patientMapper = PatientMapper.INSTANCE;
+        patientService = new PatientService(patientRepository, patientMapper);
     }
 
     @Test
@@ -43,7 +44,7 @@ class PatientServiceTest {
 
         var result = patientService.getAllPatients();
         var expectedResult = patients.stream()
-                .map(patient -> modelMapper.map(patient, PatientDto.class))
+                .map(patient -> patientMapper.patientToPatientDto(patient))
                 .collect(Collectors.toList());
 
         assertNotNull(result);
@@ -59,7 +60,7 @@ class PatientServiceTest {
         var result = patientService.getPatientByEmail("test@gmail.com");
 
         assertNotNull(result);
-        checkPatientDto(modelMapper.map(patient, PatientDto.class), result);
+        checkPatientDto(patientMapper.patientToPatientDto(patient), result);
     }
 
     @Test
@@ -74,12 +75,12 @@ class PatientServiceTest {
     @Test
     void getPatientById_CorrectData_ReturnData() {
         var patient = PatientUtils.buildPatient(PatientUtils.buildPatientDto());
-        when(patientRepository.getPatientById(anyLong())).thenReturn(Optional.of(patient));
+        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(patient));
 
         var result = patientService.getPatientById(1);
 
         assertNotNull(result);
-        checkPatientDto(modelMapper.map(patient, PatientDto.class), result);
+        checkPatientDto(patientMapper.patientToPatientDto(patient), result);
     }
 
     @Test
@@ -94,12 +95,13 @@ class PatientServiceTest {
     @Test
     void addPatient_CorrectData_SaveInvoked() {
         var patient = PatientUtils.buildPatientDto();
+        var result = patientMapper.patientDtoToPatient(patient);
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        doNothing().when(patientRepository).save(any());
+        when(patientRepository.save(any(Patient.class))).thenReturn(result);
 
         patientService.addPatient(patient);
 
-        verify(patientRepository).save(modelMapper.map(patient, Patient.class));
+        verify(patientRepository).save(result);
     }
 
     @Test
@@ -116,12 +118,13 @@ class PatientServiceTest {
     void editPatient_CorrectData_UpdateInvoked() {
         var patient = PatientUtils.buildPatientDto();
         var email = patient.getEmail();
+        var result = patientMapper.patientDtoToPatient(patient);
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(PatientUtils.buildPatient(patient)));
-        doNothing().when(patientRepository).update(anyString(), any(Patient.class));
+        when(patientRepository.save(any(Patient.class))).thenReturn(result);
 
         patientService.editPatient(email, patient);
 
-        verify(patientRepository).update(email, modelMapper.map(patient, Patient.class));
+        verify(patientRepository).save(result);
     }
 
     @Test
@@ -163,13 +166,14 @@ class PatientServiceTest {
         var patient = PatientUtils.buildPatientDto();
         var email = "test@gmail.com";
         var password = "test1";
+        var result = PatientUtils.buildPatient(patient);
+        result.setPassword(password);
         when(patientRepository.findByEmail(anyString())).thenReturn(Optional.of(PatientUtils.buildPatient(patient)));
-        doNothing().when(patientRepository).update(anyString(), any(Patient.class));
+        when(patientRepository.save(any(Patient.class))).thenReturn(result);
 
         patientService.editPassword(email, password);
 
-        patient.setPassword(password);
-        verify(patientRepository).update(email, modelMapper.map(patient, Patient.class));
+        verify(patientRepository).save(result);
     }
 
     @Test
